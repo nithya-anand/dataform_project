@@ -3,7 +3,7 @@ function fn_calculateHash(input_value) {
         glb_null_replace,
         glb_hash_concat,
         glb_hash_algorithm
-    } = dv_env_vars;
+    } = env_vars;
 
     //const aliasPrefix = alias ? `${alias}.` : '';
 
@@ -22,8 +22,8 @@ function fn_setIncrWhere(source, batch, alias) {
     const batch_code = batch.batch_code;
 
     //extract environmental and global variables
-    const batch_table = dv_env_vars.glb_dv_audit_batch_control;
-    const hist_load_ts = dv_env_vars.glb_hist_load_ts;
+    const batch_table = env_vars.glb_audit_batch_control;
+    const hist_load_ts = env_vars.glb_hist_load_ts;
 
     //declare individual query condition
     const greaterThan = `(SELECT batch_extract_load_start_ts FROM ${batch_table} WHERE batch_code = "${batch_code}")`;
@@ -36,20 +36,9 @@ function fn_setIncrWhere(source, batch, alias) {
     const condition = fullScanFlag === "N" ?
         `BETWEEN ${greaterThan} AND ${lessThan}` :
         `> "${hist_load_ts}"`;
-
-    const condition1 = fullScanFlag === "N" ?
-        `BETWEEN DATETIME_SUB(${greaterThan},INTERVAL ${OverlapFlag} day)  AND ${lessThan}` :
-        `> "${hist_load_ts}"`;
-        // const condition2 = fullScanFlag === "N" ?
-        // `BETWEEN DATETIME_SUB(${greaterThan},INTERVAL 7 day)  AND ${lessThan}` :
-        // `> "${hist_load_ts}"`;
     
-    if (OverlapFlag){
-        return `WHERE cast(${aliasPrefix}${inc_src_col} as DATETIME) ${condition1}`;
-    }
-    else {
-        return `WHERE cast(${aliasPrefix}${inc_src_col} as DATETIME) ${condition}`;
-    }
+    return `WHERE cast(${aliasPrefix}${inc_src_col} as DATETIME) ${condition}`;
+    
 
 }
 

@@ -1,0 +1,13 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_setIncrWhere
+    } = require("includes/functions");
+}
+
+config {
+    type:"table"
+}
+
+
+select * from ${ref("patient")}

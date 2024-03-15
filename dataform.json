@@ -6,7 +6,12 @@
   "defaultLocation": "us-central1",
   "vars": {
     "tgt_dataset":"datahub",
-    "src_dataset":"master_data"
+    "src_dataset":"master_data",
+    "master_project":"hackathon-healthcare-datahub",
+    "glb_hash_algorithm": "MD5",
+    "glb_null_replace": "^",
+    "glb_hash_concat": "~",
+    "glb_empty_replace": "NA"
   }
 }
     
