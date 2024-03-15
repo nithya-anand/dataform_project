@@ -3,6 +3,9 @@ js {
         fn_calculateHash,
         fn_setIncrWhere
     } = require("includes/functions");
+    let {
+        source
+    } = require("definitions/param/source/patient_dim");
 }
 
 config {
@@ -16,7 +19,7 @@ with load_info as (
     where batch_status='inprogress'
 ),
 patient_data as (
-    select * from ${ref("patient")}
+    select * from ${ref("patient")} 
 )
 
 select distinct patient_key,
