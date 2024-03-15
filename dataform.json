@@ -1,0 +1,12 @@
+{
+  "defaultSchema": "datahub_dataprocess",
+  "assertionSchema": "datahub_dataprocess",
+  "warehouse": "bigquery",
+  "defaultDatabase": "hackathon-healthcare-datahub",
+  "defaultLocation": "US",
+  "vars": {
+    "tgt_dataset":"datahub",
+    "src_dataset":"master_data"
+  }
+}
+    
