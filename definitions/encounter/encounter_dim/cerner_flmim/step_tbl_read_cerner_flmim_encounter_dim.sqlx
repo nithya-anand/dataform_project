@@ -12,7 +12,6 @@ js {
     } = require("definitions/batch_control/batch");
 }
 
-
 config {
     type:"table",
     tags:["cerner_flmim_encounter_load"],
@@ -84,4 +83,5 @@ on
   li.src_cd_bk='CERNER_FLMIM'
 
 where ehr_source = 'CERNER_FLMIM'
+
 

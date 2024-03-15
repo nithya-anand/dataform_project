@@ -103,7 +103,7 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
         JOIN ${target_table} tgt
         ON src.${unique_key} = tgt.${unique_key}
         WHERE (${compare_listString}
-          AND tgt.vld_to_ts = '9999-12-31T00:00:00')
+          AND tgt.vld_to_ts = '9999-12-31T23:59:59')
           AND src.vld_fm_ts IN (
             SELECT vld_fm_ts
             FROM (
@@ -115,12 +115,12 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
       ) src
       -- Joining on join key to create duplicates of records to be updated or inserted
       ON src.join_key = tgt.${unique_key}
-      WHEN MATCHED AND ${compare_listString} AND tgt.vld_to_ts = '9999-12-31T00:00:00'
+      WHEN MATCHED AND ${compare_listString} AND tgt.vld_to_ts = '9999-12-31T23:59:59'
       THEN
         -- Update condition for updating valid_to_ts value only and any data column
         UPDATE SET tgt.vld_to_ts = src.vld_fm_ts
       -- Insert records whether new or updated
-      WHEN NOT MATCHED AND src.vld_to_ts='9999-12-31T00:00:00' THEN 
+      WHEN NOT MATCHED AND src.vld_to_ts='9999-12-31T23:59:59' THEN 
         INSERT (${column_list})
         VALUES (${column_list})`;
     } else {
@@ -148,7 +148,7 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
         WHERE (
           src.${hash_dif} != tgt.${hash_dif} AND
           --src.${datakey} != tgt.${datakey} AND
-          tgt.vld_to_ts = '9999-12-31T00:00:00'
+          tgt.vld_to_ts = '9999-12-31T23:59:59'
         )
         AND src.vld_fm_ts IN (
           SELECT vld_fm_ts
@@ -161,7 +161,7 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
       ) src
       -- Joining on join key to create duplicates of records to be updated or inserted
       ON src.join_key = tgt.${unique_key}
-      WHEN MATCHED AND src.${hash_dif} != tgt.${hash_dif} AND tgt.vld_to_ts = '9999-12-31T00:00:00'
+      WHEN MATCHED AND src.${hash_dif} != tgt.${hash_dif} AND tgt.vld_to_ts = '9999-12-31T23:59:59'
       THEN
         -- Update condition for updating valid_to_ts value only and any data column
         UPDATE SET tgt.vld_to_ts = src.vld_fm_ts
