@@ -8,7 +8,7 @@ function fn_calculateHash(input_value) {
     //const aliasPrefix = alias ? `${alias}.` : '';
 
     const fetchValue = input_value;
-    const value = fetchValue.map((v) => `coalesce(cast(trim(${v}) as STRING), '${glb_null_replace}')`).join('||"~"||');
+    const value = fetchValue.map((v) => `coalesce(cast(trim(cast(${v} as STRING)) as STRING), '${glb_null_replace}')`).join('||"~"||');
     const calculateHash = `TO_HEX(${glb_hash_algorithm}(${value}))`
     return `(${calculateHash})`;
 }
@@ -182,7 +182,7 @@ function fn_insertload(processed_table, target_table, target) {
         glb_null_replace,
         glb_hash_concat,
         glb_hash_algorithm
-    } = dv_env_vars;
+    } = env_vars;
 
     // Initialize variables for unique_key (bk), hash difference (hk), datakey (dk),
     // column list for insert, and compare list using the provided functions.

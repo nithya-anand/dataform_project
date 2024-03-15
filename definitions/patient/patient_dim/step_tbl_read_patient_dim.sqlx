@@ -7,9 +7,52 @@ js {
 
 config {
     type:"table",
+    tags:["patient_load"],
     dependencies:["batch_start"]
 }
 
+with load_info as (
+    select batch_run_id,batch_code  from ${ref("audit_batch_control")}
+    where batch_status='inprogress'
+),
+patient_data as (
+    select * from ${ref("patient")}
+)
+
+select distinct patient_key,
+    cast(extract_timestamp as DATETIME) as vld_fm_ts,
+  cast('9999-12-31T23:59:59.59' as DATETIME) as vld_to_ts,
+  li.batch_run_id as dwm_load_info_sk,
+  cast('NA' as STRING) as tenant_sk,
+ cast('NA' as STRING) as src_cd_sk,
+ cast('NA' as STRING) as src_cd,
+ cast('NA' as STRING) as src_cd_descr,
+  patient_birth_date as dob,
+  cast(null as STRING) as sex_cd_sk,
+  patient_gender_code as sex_cd,
+  patient_gender_code as sex_descr,
+  patient_first_name as frst_nm,
+  patient_middle_name as mid_nm,
+  patient_last_name as last_nm,
+  cast(null as STRING) as sufx_nm,
+  cast(null as STRING) as ttl_nm,
+  concat(patient_last_name,' ',patient_first_name,' ',patient_middle_name) as full_nm,
+  concat(patient_last_name,' ',patient_first_name,' ',patient_middle_name) as dspl_nm,
+  patient_address as adr_line_1_descr,
+  cast(null as STRING) as adr_line_2_descr,
+  cast(null as STRING) as adr_line_3_descr,
+  cast(null as STRING) as adr_line_4_descr,
+  cast(null as STRING) as cty_nm,
+  cast(null as STRING) as cnty_nm,
+  patient_state as ste_prov_cd,
+  cast(zip_code as STRING) as prim_zip_exn_num,
+  patient_phone as hm_ph_num,
+  cast(null as STRING) as email_adr_descr,
+  cast(null as STRING) as dscd_ind
+
+  from patient_data pt
+  join load_info li
+  on li.batch_code='datahub-dataload' 
 
 
-select * from ${ref("patient")}
+
