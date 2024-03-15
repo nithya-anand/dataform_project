@@ -1,4 +1,6 @@
-[].forEach((name) =>
+["encounter",
+"patient",
+"practitioner"].forEach((name) =>
     declare({
         database: dataform.projectConfig.vars.defaultDatabase,
         schema: dataform.projectConfig.vars.src_dataset,
