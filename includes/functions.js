@@ -13,6 +13,17 @@ function fn_calculateHash(input_value) {
     return `(${calculateHash})`;
 }
 
+// Calculate the business key ,'bk'. '<>' for readability
+function fn_calculateConcat(input_value) {
+    const {
+        glb_null_replace
+    } = env_vars;
+    const fetchValue = input_value;
+    const value = fetchValue.map((v) => `coalesce(cast(${v} as STRING), '${glb_null_replace}')`).join('||"<>"||');
+    const calculateHash = `(${value})`
+    return `(${calculateHash})`;
+}
+
 function fn_setIncrWhere(source, batch, alias) {
     // extract values from object being passed
     let inc_src_col = source.source_incr_load_column;
@@ -252,6 +263,7 @@ function fn_batchend(){
 
 module.exports = {
     fn_calculateHash,
+    fn_calculateConcat,
     fn_setIncrWhere,
     fn_SCD2load,
     fn_insertload,
