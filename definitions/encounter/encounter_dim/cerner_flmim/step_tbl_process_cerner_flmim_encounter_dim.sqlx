@@ -1,0 +1,53 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_calculateConcat,
+        fn_setIncrWhere,
+        fn_getSK
+    } = require("includes/functions");
+    let {
+        source
+    } = require("definitions/param/source/cerner_flmim_encounter_dim")
+}
+
+
+config {
+    type:"table",
+    tags:["cerner_flmim_encounter_load"],
+    dependencies:["step_tbl_read_cerner_flmim_encounter_dim"]
+}
+
+with
+step_read as (
+SELECT
+    ${fn_calculateHash(source.dk)} as encntr_dk
+    ,${fn_calculateConcat(source.bk)} as encntr_bk
+    ,${fn_calculateHash(source.bk)} AS bk_hash
+    ,${fn_calculateHash(source.hash_dif)} AS hash_dif
+    ,*
+FROM
+  ${ref("step_tbl_read_cerner_flmim_encounter_dim")}),
+hrm as (select * from ${ref("cmn_lkp_harmonize")})
+
+select distinct 
+step_read.*
+
+,${fn_getSK("step_read.encntr_type_cd","enc_type_hrm.cmn_cd_sk")} as encntr_type_cd_sk
+,cast(enc_type_hrm.cd as string) as encntr_type_harmonized_cd
+,cast(enc_type_hrm.descr as string) as encntr_type_harmonized_descr
+
+,${fn_getSK("step_read.adm_type_cd","adm_type_hrm.cmn_cd_sk")}  as adm_type_cd_sk
+,cast(adm_type_hrm.cd as string) as adm_type_harmonized_cd
+,cast(adm_type_hrm.descr as string) as adm_type_harmonized_descr
+from step_read
+
+left join hrm enc_type_hrm
+on enc_type_hrm.tenant_cmn_cd = step_read.encntr_type_cd
+and enc_type_hrm.tenant_cmn_cd_descr = step_read.encntr_type_descr
+and upper(enc_type_hrm.dmn_nm) = 'ENCOUNTER TYPE'
+
+left join hrm adm_type_hrm
+on adm_type_hrm.tenant_cmn_cd = step_read.adm_type_cd
+and adm_type_hrm.tenant_cmn_cd_descr = step_read.adm_type_descr
+and upper(adm_type_hrm.dmn_nm) = 'ADMISSION TYPE'
+

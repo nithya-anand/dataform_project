@@ -24,29 +24,26 @@ function fn_calculateConcat(input_value) {
     return `(${calculateHash})`;
 }
 
+
 function fn_setIncrWhere(source, batch, alias) {
     // extract values from object being passed
     let inc_src_col = source.source_incr_load_column;
-    const fullScanFlag = source.source_full_read_flag;
-    const OverlapFlag = source.pvt_overlap_days;
 
     const batch_code = batch.batch_code;
 
     //extract environmental and global variables
     const batch_table = env_vars.glb_audit_batch_control;
-    const hist_load_ts = env_vars.glb_hist_load_ts;
 
     //declare individual query condition
-    const greaterThan = `(SELECT batch_extract_load_start_ts FROM ${batch_table} WHERE batch_code = "${batch_code}")`;
-    const lessThan = `(SELECT batch_extract_load_end_ts FROM ${batch_table} WHERE batch_code = "${batch_code}")`;
+    const greaterThan = `(SELECT batch_extract_load_start_ts FROM ${batch_table} WHERE batch_code = "${batch_code}" and batch_status='inprogress')`;
+    const lessThan = `(SELECT batch_extract_load_end_ts FROM ${batch_table} WHERE batch_code = "${batch_code}" and batch_status='inprogress')`;
 
     // alias if passed will be used else skipped
     const aliasPrefix = alias ? `${alias}.` : '';
 
     // consolidated condition
-    const condition = fullScanFlag === "N" ?
-        `BETWEEN ${greaterThan} AND ${lessThan}` :
-        `> "${hist_load_ts}"`;
+    const condition = 
+        `BETWEEN ${greaterThan} AND ${lessThan}`
     
     return `WHERE cast(${aliasPrefix}${inc_src_col} as DATETIME) ${condition}`;
     

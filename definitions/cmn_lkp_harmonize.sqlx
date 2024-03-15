@@ -1,0 +1,22 @@
+config {
+    type: "table"
+}
+
+
+SELECT
+  DISTINCT tnt_cmn_code.tenant_cmn_cd,
+  tnt_cmn_code.tenant_cmn_cd_descr,
+  tnt_cmn_code.dmn_nm,
+  cmn_code.cd AS cd,
+  cmn_code.cmn_cd_dk AS cmn_cd_sk,
+  cmn_code.descr AS descr
+FROM
+  ${ref("tenant_cmn_cd_dim")} tnt_cmn_code
+LEFT JOIN
+  ${ref("cmn_cd_2_tenant_cmn_cd_brg")} bridge
+ON
+  tnt_cmn_code.tenant_cmn_cd_dk=bridge.tenant_cmn_cd_dk
+LEFT JOIN
+  ${ref("cmn_cd_dim")} cmn_code
+ON
+  bridge.cmn_cd_dk=cmn_code.cmn_cd_dk
