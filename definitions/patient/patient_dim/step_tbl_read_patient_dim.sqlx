@@ -6,6 +6,9 @@ js {
     let {
         source
     } = require("definitions/param/source/patient_dim");
+    let {
+        batch
+    } = require("definitions/batch_control/batch");
 }
 
 config {
@@ -19,7 +22,7 @@ with load_info as (
     where batch_status='inprogress'
 ),
 patient_data as (
-    select * from ${ref("patient")} 
+    select * from ${ref("patient")} ${fn_setIncrWhere(source, batch)}
 )
 
 select distinct patient_key,
