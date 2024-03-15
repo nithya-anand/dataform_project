@@ -1,6 +1,7 @@
 js {
     let {
         fn_calculateHash,
+<<<<<<< HEAD
         fn_calculateConcat,
         fn_setIncrWhere
     } = require("includes/functions");
@@ -52,3 +53,17 @@ ${fn_calculateHash(source.dk)} as encntr_dk
 ,ptnt_age_num
 ,dschrg_dt 
 from encntr
+=======
+        fn_setIncrWhere
+    } = require("includes/functions");
+}
+
+config {
+    type:"table",
+    dependencies:["batch_start"]
+}
+
+
+
+select * from ${ref("patient")}
+>>>>>>> refs/heads/main
