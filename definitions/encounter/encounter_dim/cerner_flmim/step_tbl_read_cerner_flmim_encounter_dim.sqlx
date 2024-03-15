@@ -1,0 +1,54 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_calculateConcat,
+        fn_setIncrWhere
+    } = require("includes/functions");
+    let {
+        source
+    } = require("definitions/param/source/cerner_txaus_encounter_dim")
+}
+
+config {
+    type:"table"
+}
+
+with
+encntr as (select * from ${ref("encounter")}) 
+
+select
+${fn_calculateHash(source.dk)} as encntr_dk
+,${fn_calculateConcat(source.bk)} as encntr_bk
+,vld_fm_ts
+,vld_to_ts
+,dwm_load_info_sk
+,tenant_sk
+,bk_hash
+,hash_dif
+,encntr_type_cd
+,encntr_type_descr
+,encntr_type_cd_sk
+,encntr_type_harmonized_cd
+,encntr_type_harmonized_descr
+,encntr_num
+,adm_type_cd
+,adm_type_descr
+,adm_type_cd_sk
+,adm_type_harmonized_cd
+,adm_type_harmonized_descr
+,vip_cd
+,vip_descr
+,vip_cd_sk
+,adm_dt
+,adm_ts
+,dschrg_ts
+,src_cd_sk
+,src_cd
+,src_cd_descr
+,src_descr
+,palliative_care_ind
+,hspc_care_ind
+,ed_ind
+,ptnt_age_num
+,dschrg_dt 
+from encntr
