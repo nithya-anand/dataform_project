@@ -1,0 +1,15 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_setIncrWhere
+    } = require("includes/functions");
+}
+
+config {
+    type:"table",
+    dependencies:["batch_start"]
+}
+
+
+
+select * from ${ref("patient")}

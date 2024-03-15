@@ -6,7 +6,8 @@ js {
 }
 
 config {
-    type:"table"
+    type:"table",
+    dependencies:["batch_start"]
 }
 
 

@@ -240,9 +240,26 @@ function fn_getSK(src_cd, cmn_cd_sk){
 }
 
 
+function fn_batchstart(){
+  let dataverse_project = dataform.projectConfig.vars.master_project;
+  let dataprocess_dataset = dataform.projectConfig.vars.stg_dataset;
+  return `
+  CALL \`${dataverse_project}.${dataprocess_dataset}.BatchStart\`('datahub-dataload');`;
+}
+
+function fn_batchend(){
+  let dataverse_project = dataform.projectConfig.vars.master_project;
+  let dataprocess_dataset = dataform.projectConfig.vars.stg_dataset;
+  return `
+  CALL \`${dataverse_project}.${dataprocess_dataset}.BatchEnd\`('datahub-dataload');`;
+}
+
 module.exports = {
     fn_calculateHash,
     fn_setIncrWhere,
     fn_SCD2load,
     fn_insertload,
-    fn_getSK};
+    fn_getSK,
+    fn_batchstart,
+    fn_batchend
+}; 

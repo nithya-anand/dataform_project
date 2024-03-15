@@ -6,7 +6,8 @@ js {
 }
 
 config {
-    type:"table"
+    type:"table",
+    dependencies:["step_tbl_read_patient_dim"]
 }
 
 

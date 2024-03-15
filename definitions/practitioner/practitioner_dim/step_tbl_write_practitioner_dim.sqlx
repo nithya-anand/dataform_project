@@ -1,0 +1,14 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_setIncrWhere,
+    } = require("includes/functions");
+}
+
+config {
+    type:"table",
+    dependencies:["step_tbl_process_practitioner"]
+}
+
+
+select 1 as test

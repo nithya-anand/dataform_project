@@ -1,0 +1,15 @@
+js {
+    let {
+        fn_batchend,
+    } = require("includes/functions");
+}
+
+config {
+    type:"table"
+}
+
+pre_operations {
+  ${fn_batchend()}
+}
+
+select 1 as test

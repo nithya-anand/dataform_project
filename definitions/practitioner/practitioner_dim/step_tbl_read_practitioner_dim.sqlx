@@ -1,0 +1,16 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_setIncrWhere,
+        fn_batchstart,
+        fn_batchend
+    } = require("includes/functions");
+}
+
+config {
+    type:"table",
+    dependencies:["batch_start"]
+}
+
+
+select * from ${ref("practitioner")}

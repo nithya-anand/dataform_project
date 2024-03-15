@@ -1,0 +1,13 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_setIncrWhere
+    } = require("includes/functions");
+}
+
+config {
+    type:"table",
+    dependencies:["step_tbl_process_patient_dim"]
+}
+
+select 1 as test

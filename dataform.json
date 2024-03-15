@@ -7,6 +7,7 @@
   "vars": {
     "tgt_dataset":"datahub",
     "src_dataset":"master_data",
+    "stg_dataset":"datahub_dataprocess",
     "master_project":"hackathon-healthcare-datahub",
     "glb_hash_algorithm": "MD5",
     "glb_null_replace": "^",
