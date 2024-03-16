@@ -13,7 +13,7 @@ js {
 
 config {
     type:"table",
-    tags:["cerner_txaus_encounter_load"],
+    tags:["cerner_txaus_encounter_load","datahub_load"],
     dependencies:["step_tbl_read_cerner_txaus_encounter_dim"]
 }
 

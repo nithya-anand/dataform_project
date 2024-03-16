@@ -11,7 +11,7 @@ js {
 
 config {
     type: "table",
-    tags:["patient_load"],
+    tags:["patient_load","datahub_load"],
     dependencies: ["step_tbl_read_patient_dim"]
 }
 

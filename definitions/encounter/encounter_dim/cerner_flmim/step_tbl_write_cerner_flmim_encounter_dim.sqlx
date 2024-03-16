@@ -16,7 +16,7 @@ js {
 
 config {
     type: "table",
-    tags:["cerner_flmim_encounter_load"],
+    tags:["cerner_flmim_encounter_load","datahub_load"],
     dependencies: ["step_tbl_process_cerner_flmim_encounter_dim"]
 }
 

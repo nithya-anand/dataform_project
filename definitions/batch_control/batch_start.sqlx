@@ -5,7 +5,8 @@ js {
 }
 
 config {
-    type:"table"
+    type:"table",
+    tags: ["datahub_load"],
 }
 
 pre_operations {
