@@ -1,6 +1,7 @@
 ["encounter",
 "patient",
 "practitioner",
+"qadata_ptnt",
 "refdata_catalogs",
 "refdata_maps"].forEach((name) =>
     declare({

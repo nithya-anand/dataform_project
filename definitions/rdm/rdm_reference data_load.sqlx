@@ -13,6 +13,8 @@ js {
 
 config {
     type: "operations",
+    tags: ["rdm_load","datahub_load"],
+    dependencies: ["batch_start"]
 }
 
 ${fn_domain_config(rdm_config)}

@@ -13,8 +13,8 @@ js {
 
 config {
     type: "table",
-    tags: ["patient_load"],
-    dependencies: ["batch_start"]
+    tags: ["patient_load","datahub_load"],
+    dependencies: ["rdm_reference data_load"]
 }
 
 WITH

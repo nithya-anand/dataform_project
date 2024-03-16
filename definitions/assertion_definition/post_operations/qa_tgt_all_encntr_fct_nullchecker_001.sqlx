@@ -1,0 +1,23 @@
+config {
+    type: "table",
+    tags: ["postoperation_checker"],
+    assertions: {
+        nonNull: ["encntr_bk",
+            "encntr_bk",
+            "vld_fm_ts",
+            "dwm_load_info_sk",
+            "tenant_sk",
+            "src_cd_sk",
+            "src_cd",
+            "ptnt_dk",
+            "attnd_pract_dk",
+            "adm_cdr_dk",
+            "dschrg_cdr_dk"
+        ]
+    }
+}
+
+SELECT
+  *
+FROM
+  ${ref("encounter_fct")}

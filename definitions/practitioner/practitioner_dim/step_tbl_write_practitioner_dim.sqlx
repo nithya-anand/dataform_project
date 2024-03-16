@@ -16,7 +16,7 @@ js {
 
 config {
     type: "table",
-    tags:["practitioner_load"],
+    tags:["practitioner_load","datahub_load"],
     dependencies: ["step_tbl_process_practitioner_dim"]
 }
 

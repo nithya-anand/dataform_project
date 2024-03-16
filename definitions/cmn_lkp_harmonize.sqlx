@@ -1,5 +1,8 @@
 config {
-    type: "table"
+    type: "table",
+    tags: ["cmn_load","datahub_load"],
+    dependencies:["step_tbl_write_patient_dim","step_tbl_write_practitioner_dim"]
+
 }
 
 
