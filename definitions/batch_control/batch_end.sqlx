@@ -1,0 +1,16 @@
+js {
+    let {
+        fn_batchend,
+    } = require("includes/functions");
+}
+
+config {
+    type:"table",
+    tags: ["datahub_load"],
+}
+
+pre_operations {
+  ${fn_batchend()}
+}
+
+select 1 as test

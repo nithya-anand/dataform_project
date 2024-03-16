@@ -3,53 +3,50 @@ function fn_calculateHash(input_value) {
         glb_null_replace,
         glb_hash_concat,
         glb_hash_algorithm
-    } = dv_env_vars;
+    } = env_vars;
 
     //const aliasPrefix = alias ? `${alias}.` : '';
 
     const fetchValue = input_value;
-    const value = fetchValue.map((v) => `coalesce(cast(trim(${v}) as STRING), '${glb_null_replace}')`).join('||"~"||');
+    const value = fetchValue.map((v) => `coalesce(cast(trim(cast(${v} as STRING)) as STRING), '${glb_null_replace}')`).join('||"~"||');
     const calculateHash = `TO_HEX(${glb_hash_algorithm}(${value}))`
     return `(${calculateHash})`;
 }
 
+// Calculate the business key ,'bk'. '<>' for readability
+function fn_calculateConcat(input_value) {
+    const {
+        glb_null_replace
+    } = env_vars;
+    const fetchValue = input_value;
+    const value = fetchValue.map((v) => `coalesce(cast(${v} as STRING), '${glb_null_replace}')`).join('||"<>"||');
+    const calculateHash = `(${value})`
+    return `(${calculateHash})`;
+}
+
+
 function fn_setIncrWhere(source, batch, alias) {
     // extract values from object being passed
     let inc_src_col = source.source_incr_load_column;
-    const fullScanFlag = source.source_full_read_flag;
-    const OverlapFlag = source.pvt_overlap_days;
 
     const batch_code = batch.batch_code;
 
     //extract environmental and global variables
-    const batch_table = dv_env_vars.glb_dv_audit_batch_control;
-    const hist_load_ts = dv_env_vars.glb_hist_load_ts;
+    const batch_table = env_vars.glb_audit_batch_control;
 
     //declare individual query condition
-    const greaterThan = `(SELECT batch_extract_load_start_ts FROM ${batch_table} WHERE batch_code = "${batch_code}")`;
-    const lessThan = `(SELECT batch_extract_load_end_ts FROM ${batch_table} WHERE batch_code = "${batch_code}")`;
+    const greaterThan = `(SELECT batch_extract_load_start_ts FROM ${batch_table} WHERE batch_code = "${batch_code}" and batch_status='inprogress')`;
+    const lessThan = `(SELECT batch_extract_load_end_ts FROM ${batch_table} WHERE batch_code = "${batch_code}" and batch_status='inprogress')`;
 
     // alias if passed will be used else skipped
     const aliasPrefix = alias ? `${alias}.` : '';
 
     // consolidated condition
-    const condition = fullScanFlag === "N" ?
-        `BETWEEN ${greaterThan} AND ${lessThan}` :
-        `> "${hist_load_ts}"`;
-
-    const condition1 = fullScanFlag === "N" ?
-        `BETWEEN DATETIME_SUB(${greaterThan},INTERVAL ${OverlapFlag} day)  AND ${lessThan}` :
-        `> "${hist_load_ts}"`;
-        // const condition2 = fullScanFlag === "N" ?
-        // `BETWEEN DATETIME_SUB(${greaterThan},INTERVAL 7 day)  AND ${lessThan}` :
-        // `> "${hist_load_ts}"`;
+    const condition = 
+        `BETWEEN ${greaterThan} AND ${lessThan}`
     
-    if (OverlapFlag){
-        return `WHERE cast(${aliasPrefix}${inc_src_col} as DATETIME) ${condition1}`;
-    }
-    else {
-        return `WHERE cast(${aliasPrefix}${inc_src_col} as DATETIME) ${condition}`;
-    }
+    return `WHERE cast(${aliasPrefix}${inc_src_col} as DATETIME) ${condition}`;
+    
 
 }
 
@@ -106,7 +103,7 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
         JOIN ${target_table} tgt
         ON src.${unique_key} = tgt.${unique_key}
         WHERE (${compare_listString}
-          AND tgt.vld_to_ts = '9999-12-31T00:00:00')
+          AND tgt.vld_to_ts = '9999-12-31T23:59:59')
           AND src.vld_fm_ts IN (
             SELECT vld_fm_ts
             FROM (
@@ -118,12 +115,12 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
       ) src
       -- Joining on join key to create duplicates of records to be updated or inserted
       ON src.join_key = tgt.${unique_key}
-      WHEN MATCHED AND ${compare_listString} AND tgt.vld_to_ts = '9999-12-31T00:00:00'
+      WHEN MATCHED AND ${compare_listString} AND tgt.vld_to_ts = '9999-12-31T23:59:59'
       THEN
         -- Update condition for updating valid_to_ts value only and any data column
         UPDATE SET tgt.vld_to_ts = src.vld_fm_ts
       -- Insert records whether new or updated
-      WHEN NOT MATCHED AND src.vld_to_ts='9999-12-31T00:00:00' THEN 
+      WHEN NOT MATCHED AND src.vld_to_ts='9999-12-31T23:59:59' THEN 
         INSERT (${column_list})
         VALUES (${column_list})`;
     } else {
@@ -151,7 +148,7 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
         WHERE (
           src.${hash_dif} != tgt.${hash_dif} AND
           --src.${datakey} != tgt.${datakey} AND
-          tgt.vld_to_ts = '9999-12-31T00:00:00'
+          tgt.vld_to_ts = '9999-12-31T23:59:59'
         )
         AND src.vld_fm_ts IN (
           SELECT vld_fm_ts
@@ -164,7 +161,7 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
       ) src
       -- Joining on join key to create duplicates of records to be updated or inserted
       ON src.join_key = tgt.${unique_key}
-      WHEN MATCHED AND src.${hash_dif} != tgt.${hash_dif} AND tgt.vld_to_ts = '9999-12-31T00:00:00'
+      WHEN MATCHED AND src.${hash_dif} != tgt.${hash_dif} AND tgt.vld_to_ts = '9999-12-31T23:59:59'
       THEN
         -- Update condition for updating valid_to_ts value only and any data column
         UPDATE SET tgt.vld_to_ts = src.vld_fm_ts
@@ -193,7 +190,7 @@ function fn_insertload(processed_table, target_table, target) {
         glb_null_replace,
         glb_hash_concat,
         glb_hash_algorithm
-    } = dv_env_vars;
+    } = env_vars;
 
     // Initialize variables for unique_key (bk), hash difference (hk), datakey (dk),
     // column list for insert, and compare list using the provided functions.
@@ -251,9 +248,27 @@ function fn_getSK(src_cd, cmn_cd_sk){
 }
 
 
+function fn_batchstart(){
+  let dataverse_project = dataform.projectConfig.vars.master_project;
+  let dataprocess_dataset = dataform.projectConfig.vars.stg_dataset;
+  return `
+  CALL \`${dataverse_project}.${dataprocess_dataset}.BatchStart\`('datahub-dataload');`;
+}
+
+function fn_batchend(){
+  let dataverse_project = dataform.projectConfig.vars.master_project;
+  let dataprocess_dataset = dataform.projectConfig.vars.stg_dataset;
+  return `
+  CALL \`${dataverse_project}.${dataprocess_dataset}.BatchEnd\`('datahub-dataload');`;
+}
+
 module.exports = {
     fn_calculateHash,
+    fn_calculateConcat,
     fn_setIncrWhere,
     fn_SCD2load,
     fn_insertload,
-    fn_getSK};
+    fn_getSK,
+    fn_batchstart,
+    fn_batchend
+}; 

@@ -1,0 +1,25 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_setIncrWhere
+    } = require("includes/functions");
+    let {
+        source
+          }      = require("definitions/param/source/patient_dim");
+    
+}
+
+config {
+    type: "table",
+    tags:["patient_load","datahub_load"],
+    dependencies: ["step_tbl_read_patient_dim"]
+}
+
+SELECT
+  ${fn_calculateHash(source.dk)} AS ptnt_dk,
+  cast(pat.patient_key as STRING) AS ptnt_bk,
+  ${fn_calculateHash(source.bk)} AS bk_hash,
+  ${fn_calculateHash(source.hash_dif)} AS hash_dif,
+  pat.*except(patient_key)
+FROM
+  ${ref("step_tbl_read_patient_dim")} pat
