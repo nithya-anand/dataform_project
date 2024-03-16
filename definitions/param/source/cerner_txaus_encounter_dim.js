@@ -18,7 +18,6 @@ const source = {
     source_table:"encounter",
     stage_table:"step_tbl_process_cerner_txaus_encounter_dim",
     target_table:"encounter_dim",
-    pvt_overlap_days: "7"
 };
 
 

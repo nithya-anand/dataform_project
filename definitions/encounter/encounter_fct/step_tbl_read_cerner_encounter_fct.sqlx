@@ -5,17 +5,14 @@ js {
         fn_setIncrWhere
     } = require("includes/functions");
     let {
-        source
-    } = require("definitions/param/source/cerner_txaus_encounter_dim")
-    let {
         batch
     } = require("definitions/batch_control/batch");
 }
 
 config {
     type: "table",
-    tags: ["cerner_txaus_encounter_load","datahub_load"],
-    dependencies: ["step_tbl_write_cerne_txaus_encounter_dim","step_tbl_write_cerner_flmim_encounter_dim"]
+    tags: ["encounter_fct_load","datahub_load"],
+    dependencies: ["step_tbl_write_cerner_txaus_encounter_dim","step_tbl_write_cerner_flmim_encounter_dim"]
 }
 
 WITH
@@ -77,13 +74,12 @@ SELECT
   CAST(encntr.encounter_sts_cd AS string) AS encntr_sts_cd,
   COALESCE(CAST(enc_sts_ref.source_desc AS string),'Not available') AS encntr_sts_cd_descr,
   '-2' AS adm_dgns_cd_sk,
-  CAST(NULL AS string) AS adm_dgns_cd,
-  CAST(NULL AS string) AS adm_dgns_descr,
+  CAST(encntr.diagnosis_id AS string) AS adm_dgns_cd,
+  -- CAST(NULL AS string) AS adm_dgns_descr,
   '-2' AS adm_dgns_dk,
   EXTRACT(date
   FROM
     admit_ts) AS adm_dt,
-  NULL AS ptnt_age_num,
   EXTRACT(date
   FROM
     discharge_ts) AS dschrg_dt
@@ -118,8 +114,3 @@ JOIN
   batch_info bi
 ON
   bi.batch_code='datahub-dataload'
-  -- join
-  --   load_info li
-  -- on
-  --   upper(li.src_cd_bk)='CERNER_TXAUS'
-  -- where upper(ehr_source) = 'CERNER_TXAUS'

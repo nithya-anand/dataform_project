@@ -5,24 +5,17 @@ js {
         fn_setIncrWhere,
         fn_getSK
     } = require("includes/functions");
-    let {
-        source
-    } = require("definitions/param/source/cerner_txaus_encounter_dim")
 }
 
 config {
     type: "table",
-    tags: ["cerner_txaus_encounter_load","datahub_load"],
+    tags: ["encounter_fct_load","datahub_load"],
     dependencies: ["step_tbl_read_cerner_encounter_fct"]
 }
 
 WITH
   step_read AS (
   SELECT
-    -- ${fn_calculateHash(source.dk)} as encntr_dk
-    --${fn_calculateConcat(source.bk)} as encntr_bk
-    -- ,${fn_calculateHash(source.bk)} AS bk_hash
-    -- ,${fn_calculateHash(source.hash_dif)} AS hash_dif
     *
   FROM
     ${ref("step_tbl_read_cerner_encounter_fct")}),
@@ -50,9 +43,12 @@ WITH
   SELECT
     *
   FROM
-    ${ref("cdr_dim")})
+    ${ref("cdr_dim")}),
+  diag_info as (select * from ${ref("diag_info")})
 SELECT
   DISTINCT step_read.*,
+  CAST(diag_info.description AS string) AS adm_dgns_descr,
+    date_diff(step_read.adm_dt, patient_dim.dob, year) AS ptnt_age_num,
   encounter_dim.encntr_bk AS encntr_bk,
   encounter_dim.encntr_dk AS encntr_dk,
   patient_dim.ptnt_dk AS ptnt_dk,
@@ -94,6 +90,9 @@ LEFT JOIN
   cdr_dim dschrg_cdr
 ON
   step_read.dschrg_dt = dschrg_cdr.cdr_dt
+
+left join diag_info
+on diag_info.diag_id = step_read.adm_dgns_cd
 LEFT JOIN
   hrm enc_sts_hrm
 ON

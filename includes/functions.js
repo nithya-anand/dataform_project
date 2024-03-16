@@ -231,7 +231,6 @@ function fn_insertload(processed_table, target_table, target) {
       ) src
       -- Joining on join key to create duplicates of records to be updated or inserted
       ON src.join_key = ${tgt_join} AND NOT(${compare_listString})
-      --ON src.join_key = tgt.${unique_key}.replace('||','|| tgt.') AND NOT(${compare_listString})
       -- Insert records whether new or updated
       WHEN NOT MATCHED THEN
         INSERT (${column_list})

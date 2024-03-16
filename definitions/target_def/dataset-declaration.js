@@ -9,7 +9,8 @@
 "practitioner_dim",
 "src_stm_dim",
 "tenant_cmn_cd_dim",
-"tenant_dim"].forEach((name) =>
+"tenant_dim",
+"diag_info"].forEach((name) =>
     declare({
         database: dataform.projectConfig.vars.master_project,
         schema: dataform.projectConfig.vars.tgt_dataset,

@@ -14,7 +14,7 @@ js {
 
 config {
     type: "table",
-    tags: ["cerner_txaus_encounter_load","datahub_load"],
+    tags: ["datahub_load","encounter_fct_load"],
     dependencies: ["step_tbl_process_cerner_encounter_fct"]
 }
 

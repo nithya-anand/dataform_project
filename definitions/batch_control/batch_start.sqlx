@@ -6,8 +6,7 @@ js {
 
 config {
     type:"table",
-    tags: ["datahub_load"],
-    dependencies: ["step_tbl_write_cerner_encounter_fct"] 
+    tags: ["datahub_load"] 
 }
 
 pre_operations {
