@@ -51,7 +51,7 @@ SELECT
     date_diff(step_read.adm_dt, patient_dim.dob, year) AS ptnt_age_num,
   encounter_dim.encntr_bk AS encntr_bk,
   encounter_dim.encntr_dk AS encntr_dk,
-  patient_dim.ptnt_dk AS ptnt_dk,
+   ${fn_getSK("step_read.ptnt_bk", "patient_dim.ptnt_dk")} AS ptnt_dk,
   ${fn_getSK("step_read.attnd_pract_bk", "attnd_pract.pract_dk")} AS attnd_pract_dk,
   ${fn_getSK("step_read.adm_pract_bk", "admt_pract.pract_dk")} AS adm_pract_dk,
   ${fn_getSK("step_read.pcp_pract_bk", "pcp_pract.pract_dk")} AS pcp_pract_dk,
