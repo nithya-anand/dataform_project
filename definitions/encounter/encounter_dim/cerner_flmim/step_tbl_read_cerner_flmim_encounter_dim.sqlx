@@ -15,7 +15,7 @@ js {
 config {
     type:"table",
     tags:["cerner_flmim_encounter_load","datahub_load"],
-    dependencies:["step_tbl_write_patient_dim","step_tbl_write_practitioner_dim"]
+    dependencies:["cmn_lkp_harmonize"]
 }
 
 with
