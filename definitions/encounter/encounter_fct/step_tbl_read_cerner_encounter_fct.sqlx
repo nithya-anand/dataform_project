@@ -1,0 +1,125 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_calculateConcat,
+        fn_setIncrWhere
+    } = require("includes/functions");
+    let {
+        source
+    } = require("definitions/param/source/cerner_txaus_encounter_dim")
+    let {
+        batch
+    } = require("definitions/batch_control/batch");
+}
+
+config {
+    type: "table",
+    tags: ["cerner_txaus_encounter_load","datahub_load"],
+    dependencies: ["step_tbl_write_cerne_txaus_encounter_dim","step_tbl_write_cerner_flmim_encounter_dim"]
+}
+
+WITH
+  encntr AS (
+  SELECT
+    *
+  FROM
+    ${ref("encounter")}),
+  step_read AS (
+  SELECT
+    *
+  FROM
+    ${ref("step_tbl_read_cerner_txaus_encounter_dim")}
+  UNION DISTINCT
+  SELECT
+    *
+  FROM
+    ${ref("step_tbl_read_cerner_flmim_encounter_dim")}),
+  batch_info AS (
+  SELECT
+    batch_run_id,
+    batch_code
+  FROM
+    ${ref("audit_batch_control")}
+  WHERE
+    batch_status='inprogress' ),
+  load_info AS (
+  SELECT
+    *
+  FROM
+    ${ref("src_stm_dim")} ),
+  ref_data AS (
+  SELECT
+    *
+  FROM
+    ${ref("refdata_maps")}),
+  patient AS (
+  SELECT
+    *
+  FROM
+    ${ref("patient")}),
+  practitioner AS (
+  SELECT
+    *
+  FROM
+    ${ref("practitioner")})
+SELECT
+  DISTINCT encntr.enc_id,
+  CURRENT_DATETIME() AS vld_fm_ts,
+  CAST('9999-12-31T23:59:59.59' AS DATETIME) AS vld_to_ts,
+  bi.batch_run_id AS dwm_load_info_sk,
+  step_read.tenant_sk AS tenant_sk,
+  step_read.src_cd_sk AS src_cd_sk,
+  step_read.src_cd AS src_cd,
+  patient.patient_key AS ptnt_bk,
+  attnd_pract.pract_id AS attnd_pract_bk,
+  admt_pract.pract_id AS adm_pract_bk,
+  pcp_pract.pract_id AS pcp_pract_bk,
+  CAST(encntr.encounter_sts_cd AS string) AS encntr_sts_cd,
+  COALESCE(CAST(enc_sts_ref.source_desc AS string),'Not available') AS encntr_sts_cd_descr,
+  '-2' AS adm_dgns_cd_sk,
+  CAST(NULL AS string) AS adm_dgns_cd,
+  CAST(NULL AS string) AS adm_dgns_descr,
+  '-2' AS adm_dgns_dk,
+  EXTRACT(date
+  FROM
+    admit_ts) AS adm_dt,
+  NULL AS ptnt_age_num,
+  EXTRACT(date
+  FROM
+    discharge_ts) AS dschrg_dt
+FROM
+  encntr
+JOIN
+  step_read
+ON
+  encntr.enc_id = step_read.enc_id
+  /*To fetch encounter status description value*/
+LEFT JOIN
+  ref_data enc_sts_ref
+ON
+  enc_sts_ref.source_code = encntr.encounter_sts_cd
+LEFT JOIN
+  patient
+ON
+  CAST(encntr.patient_id AS string) = CAST(patient.patient_key AS string)
+LEFT JOIN
+  practitioner attnd_pract
+ON
+  CAST(encntr.attending_practid AS string) = CAST(attnd_pract.pract_id AS string)
+LEFT JOIN
+  practitioner admt_pract
+ON
+  CAST(encntr.admitting_practid AS string) = CAST(admt_pract.pract_id AS string)
+LEFT JOIN
+  practitioner pcp_pract
+ON
+  CAST(encntr.primary_care_provider_practid AS string) = CAST(pcp_pract.pract_id AS string)
+JOIN
+  batch_info bi
+ON
+  bi.batch_code='datahub-dataload'
+  -- join
+  --   load_info li
+  -- on
+  --   upper(li.src_cd_bk)='CERNER_TXAUS'
+  -- where upper(ehr_source) = 'CERNER_TXAUS'

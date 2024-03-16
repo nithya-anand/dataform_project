@@ -1,0 +1,26 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_setIncrWhere,
+        fn_insertload
+    } = require("includes/functions");
+    let {
+        target
+    } = require("definitions/param/target/encounter_fct");
+    let processed_table = ref(target.stage_table)
+    let target_table = ref(target.target_table)
+
+}
+
+config {
+    type: "table",
+    tags: ["cerner_txaus_encounter_load","datahub_load"],
+    dependencies: ["step_tbl_process_cerner_encounter_fct"]
+}
+
+SELECT
+  1 AS test
+
+pre_operations {
+  ${fn_insertload(processed_table, target_table, target)}
+}
