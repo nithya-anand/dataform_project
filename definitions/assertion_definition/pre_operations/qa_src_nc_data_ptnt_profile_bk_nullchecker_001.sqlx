@@ -1,0 +1,13 @@
+config {
+    type: "table",
+    tags: ["preoperation_nc_checker"],
+    assertions: {
+        nonNull: ["patient_key", "patient_last_name"]
+    }
+}
+
+SELECT
+  *
+FROM
+  ${ref("qadata_ptnt")}
+

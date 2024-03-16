@@ -1,5 +1,6 @@
 ["encounter",
 "patient",
+"qadata_ptnt",
 "practitioner"].forEach((name) =>
     declare({
         database: dataform.projectConfig.vars.defaultDatabase,
