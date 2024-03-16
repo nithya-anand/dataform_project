@@ -24,29 +24,26 @@ function fn_calculateConcat(input_value) {
     return `(${calculateHash})`;
 }
 
+
 function fn_setIncrWhere(source, batch, alias) {
     // extract values from object being passed
     let inc_src_col = source.source_incr_load_column;
-    const fullScanFlag = source.source_full_read_flag;
-    const OverlapFlag = source.pvt_overlap_days;
 
     const batch_code = batch.batch_code;
 
     //extract environmental and global variables
     const batch_table = env_vars.glb_audit_batch_control;
-    const hist_load_ts = env_vars.glb_hist_load_ts;
 
     //declare individual query condition
-    const greaterThan = `(SELECT batch_extract_load_start_ts FROM ${batch_table} WHERE batch_code = "${batch_code}")`;
-    const lessThan = `(SELECT batch_extract_load_end_ts FROM ${batch_table} WHERE batch_code = "${batch_code}")`;
+    const greaterThan = `(SELECT batch_extract_load_start_ts FROM ${batch_table} WHERE batch_code = "${batch_code}" and batch_status='inprogress')`;
+    const lessThan = `(SELECT batch_extract_load_end_ts FROM ${batch_table} WHERE batch_code = "${batch_code}" and batch_status='inprogress')`;
 
     // alias if passed will be used else skipped
     const aliasPrefix = alias ? `${alias}.` : '';
 
     // consolidated condition
-    const condition = fullScanFlag === "N" ?
-        `BETWEEN ${greaterThan} AND ${lessThan}` :
-        `> "${hist_load_ts}"`;
+    const condition = 
+        `BETWEEN ${greaterThan} AND ${lessThan}`
     
     return `WHERE cast(${aliasPrefix}${inc_src_col} as DATETIME) ${condition}`;
     
@@ -106,7 +103,7 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
         JOIN ${target_table} tgt
         ON src.${unique_key} = tgt.${unique_key}
         WHERE (${compare_listString}
-          AND tgt.vld_to_ts = '9999-12-31T00:00:00')
+          AND tgt.vld_to_ts = '9999-12-31T23:59:59.590000')
           AND src.vld_fm_ts IN (
             SELECT vld_fm_ts
             FROM (
@@ -118,12 +115,12 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
       ) src
       -- Joining on join key to create duplicates of records to be updated or inserted
       ON src.join_key = tgt.${unique_key}
-      WHEN MATCHED AND ${compare_listString} AND tgt.vld_to_ts = '9999-12-31T00:00:00'
+      WHEN MATCHED AND ${compare_listString} AND tgt.vld_to_ts = '9999-12-31T23:59:59.590000'
       THEN
         -- Update condition for updating valid_to_ts value only and any data column
         UPDATE SET tgt.vld_to_ts = src.vld_fm_ts
       -- Insert records whether new or updated
-      WHEN NOT MATCHED AND src.vld_to_ts='9999-12-31T00:00:00' THEN 
+      WHEN NOT MATCHED AND src.vld_to_ts='9999-12-31T23:59:59.590000' THEN 
         INSERT (${column_list})
         VALUES (${column_list})`;
     } else {
@@ -151,7 +148,7 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
         WHERE (
           src.${hash_dif} != tgt.${hash_dif} AND
           --src.${datakey} != tgt.${datakey} AND
-          tgt.vld_to_ts = '9999-12-31T00:00:00'
+          tgt.vld_to_ts = '9999-12-31T23:59:59.590000'
         )
         AND src.vld_fm_ts IN (
           SELECT vld_fm_ts
@@ -164,7 +161,7 @@ function fn_SCD2load(processed_table, target_table, target, load_type) {
       ) src
       -- Joining on join key to create duplicates of records to be updated or inserted
       ON src.join_key = tgt.${unique_key}
-      WHEN MATCHED AND src.${hash_dif} != tgt.${hash_dif} AND tgt.vld_to_ts = '9999-12-31T00:00:00'
+      WHEN MATCHED AND src.${hash_dif} != tgt.${hash_dif} AND tgt.vld_to_ts = '9999-12-31T23:59:59.590000'
       THEN
         -- Update condition for updating valid_to_ts value only and any data column
         UPDATE SET tgt.vld_to_ts = src.vld_fm_ts
@@ -234,7 +231,6 @@ function fn_insertload(processed_table, target_table, target) {
       ) src
       -- Joining on join key to create duplicates of records to be updated or inserted
       ON src.join_key = ${tgt_join} AND NOT(${compare_listString})
-      --ON src.join_key = tgt.${unique_key}.replace('||','|| tgt.') AND NOT(${compare_listString})
       -- Insert records whether new or updated
       WHEN NOT MATCHED THEN
         INSERT (${column_list})

@@ -1,0 +1,101 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_calculateConcat,
+        fn_setIncrWhere,
+        fn_getSK
+    } = require("includes/functions");
+}
+
+config {
+    type: "table",
+    tags: ["encounter_fct_load","datahub_load"],
+    dependencies: ["step_tbl_read_cerner_encounter_fct"]
+}
+
+WITH
+  step_read AS (
+  SELECT
+    *
+  FROM
+    ${ref("step_tbl_read_cerner_encounter_fct")}),
+  hrm AS (
+  SELECT
+    *
+  FROM
+    ${ref("cmn_lkp_harmonize")}),
+  patient_dim AS (
+  SELECT
+    *
+  FROM
+    ${ref("patient_dim")}),
+  practitioner_dim AS (
+  SELECT
+    *
+  FROM
+    ${ref("practitioner_dim")}),
+  encounter_dim AS (
+  SELECT
+    *
+  FROM
+    ${ref("encounter_dim")}),
+  cdr_dim AS (
+  SELECT
+    *
+  FROM
+    ${ref("cdr_dim")}),
+  diag_info as (select * from ${ref("diag_info")})
+SELECT
+  DISTINCT step_read.*,
+  CAST(diag_info.description AS string) AS adm_dgns_descr,
+    date_diff(step_read.adm_dt, patient_dim.dob, year) AS ptnt_age_num,
+  encounter_dim.encntr_bk AS encntr_bk,
+  encounter_dim.encntr_dk AS encntr_dk,
+   ${fn_getSK("step_read.ptnt_bk", "patient_dim.ptnt_dk")} AS ptnt_dk,
+  ${fn_getSK("step_read.attnd_pract_bk", "attnd_pract.pract_dk")} AS attnd_pract_dk,
+  ${fn_getSK("step_read.adm_pract_bk", "admt_pract.pract_dk")} AS adm_pract_dk,
+  ${fn_getSK("step_read.pcp_pract_bk", "pcp_pract.pract_dk")} AS pcp_pract_dk,
+  adm_cdr.cdr_dk AS adm_cdr_dk,
+  dschrg_cdr.cdr_dk AS dschrg_cdr_dk,
+  ${fn_getSK("step_read.encntr_sts_cd", "enc_sts_hrm.cmn_cd_sk")} AS encntr_sts_cd_sk,
+  CAST(enc_sts_hrm.cd AS string) AS encntr_sts_harmonized_cd,
+  CAST(enc_sts_hrm.descr AS string) AS encntr_sts_harmonized_descr
+FROM
+  step_read
+JOIN
+  encounter_dim
+ON
+  CAST(step_read.enc_id AS string) = SUBSTR(encounter_dim.encntr_bk,1,INSTR(encounter_dim.encntr_bk,'<>')-1)
+LEFT JOIN
+  patient_dim
+ON
+  CAST(step_read.ptnt_bk AS string) = patient_dim.ptnt_bk
+LEFT JOIN
+  practitioner_dim attnd_pract
+ON
+  step_read.attnd_pract_bk = attnd_pract.pract_bk
+LEFT JOIN
+  practitioner_dim admt_pract
+ON
+  step_read.adm_pract_bk = admt_pract.pract_bk
+LEFT JOIN
+  practitioner_dim pcp_pract
+ON
+  step_read.pcp_pract_bk = pcp_pract.pract_bk
+LEFT JOIN
+  cdr_dim adm_cdr
+ON
+  step_read.adm_dt = adm_cdr.cdr_dt
+LEFT JOIN
+  cdr_dim dschrg_cdr
+ON
+  step_read.dschrg_dt = dschrg_cdr.cdr_dt
+
+left join diag_info
+on diag_info.diag_id = step_read.adm_dgns_cd
+LEFT JOIN
+  hrm enc_sts_hrm
+ON
+  enc_sts_hrm.tenant_cmn_cd = step_read.encntr_sts_cd
+  AND enc_sts_hrm.tenant_cmn_cd_descr = step_read.encntr_sts_cd_descr
+  AND UPPER(enc_sts_hrm.dmn_nm) = 'ENCOUNTER STATUS'

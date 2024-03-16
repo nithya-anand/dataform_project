@@ -1,0 +1,16 @@
+config {
+    type: "assertion",
+    tags: ["postoperation_checker"]
+}
+
+SELECT
+  *
+FROM
+  ${ref("encounter_dim")}
+WHERE
+  encntr_type_descr IS NULL
+  AND encntr_type_cd_sk IS NULL
+  AND src_cd_sk IS NULL
+  AND src_cd IS NULL
+  AND src_cd_descr IS NULL
+  AND src_descr IS NULL

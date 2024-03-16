@@ -1,0 +1,15 @@
+config {
+    type: "table",
+    tags: ["preoperation_nc_checker"],
+    assertions: {
+        rowConditions: [
+      'patient_gender_code is null'
+        ]
+    }
+}
+
+SELECT
+  *
+FROM
+  ${ref("qadata_ptnt")}
+  --${ref("patient")}

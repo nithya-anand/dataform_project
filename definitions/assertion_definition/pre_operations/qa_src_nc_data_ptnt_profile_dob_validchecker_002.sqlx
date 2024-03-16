@@ -1,0 +1,15 @@
+config {
+    type: "table",
+    tags: ["preoperation_nc_checker"],
+    assertions: {
+        rowConditions: [
+      'patient_birth_date is null or patient_birth_date > "2025-01-31"'
+        ]
+    }
+}
+
+SELECT
+  *
+FROM
+  ${ref("qadata_ptnt")}
+  --${ref("patient")}

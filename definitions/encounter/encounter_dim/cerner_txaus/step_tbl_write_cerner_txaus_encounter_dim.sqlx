@@ -6,7 +6,7 @@ js {
     } = require("includes/functions");
     let {
         source
-    } = require("definitions/param/source/cerner_flmim_encounter_dim");
+    } = require("definitions/param/source/cerner_txaus_encounter_dim");
     let processed_table = ref(source.stage_table)
     let target_table = ref(source.target_table)
     let {
@@ -16,8 +16,8 @@ js {
 
 config {
     type: "table",
-    tags:["cerner_flmim_encounter_load","datahub_load"],
-    dependencies: ["step_tbl_process_cerner_flmim_encounter_dim"]
+    tags:["cerner_txaus_encounter_load","datahub_load"],
+    dependencies: ["step_tbl_process_cerner_txaus_encounter_dim"]
 }
 
 SELECT

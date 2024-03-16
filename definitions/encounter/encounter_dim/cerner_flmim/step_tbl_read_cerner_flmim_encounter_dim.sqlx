@@ -6,49 +6,82 @@ js {
     } = require("includes/functions");
     let {
         source
-    } = require("definitions/param/source/cerner_txaus_encounter_dim")
+    } = require("definitions/param/source/cerner_flmim_encounter_dim")
+    let {
+        batch
+    } = require("definitions/batch_control/batch");
 }
 
 config {
-    type:"table"
+    type:"table",
+    tags:["cerner_flmim_encounter_load","datahub_load"],
+    dependencies:["cmn_lkp_harmonize"]
 }
 
 with
-encntr as (select * from ${ref("encounter")}) 
+encntr as (select * from ${ref("encounter")} ${fn_setIncrWhere(source, batch)}),
+batch_info AS (
+  SELECT
+    batch_run_id,
+    batch_code
+  FROM
+    ${ref("audit_batch_control")}
+  WHERE
+    batch_status='inprogress' ),
+  load_info AS (
+  SELECT
+    *
+  FROM
+    ${ref("src_stm_dim")} ),
 
-select
-${fn_calculateHash(source.dk)} as encntr_dk
-,${fn_calculateConcat(source.bk)} as encntr_bk
-,vld_fm_ts
-,vld_to_ts
-,dwm_load_info_sk
-,tenant_sk
-,bk_hash
-,hash_dif
-,encntr_type_cd
-,encntr_type_descr
-,encntr_type_cd_sk
-,encntr_type_harmonized_cd
-,encntr_type_harmonized_descr
-,encntr_num
-,adm_type_cd
-,adm_type_descr
-,adm_type_cd_sk
-,adm_type_harmonized_cd
-,adm_type_harmonized_descr
-,vip_cd
-,vip_descr
-,vip_cd_sk
-,adm_dt
-,adm_ts
-,dschrg_ts
-,src_cd_sk
-,src_cd
-,src_cd_descr
-,src_descr
-,palliative_care_ind
-,hspc_care_ind
-,ed_ind
-,ptnt_age_num
-,dschrg_dt 
+ref_data as (select * from ${ref("refdata_maps")})
+
+select distinct
+enc_id
+,cast(extract_ts as datetime) as vld_fm_ts
+,cast('9999-12-31T23:59:59.59' as DATETIME) as vld_to_ts
+,bi.batch_run_id as dwm_load_info_sk
+,li.tenant_sk AS tenant_sk
+,li.src_cd_sk AS src_cd_sk
+,li.src_stm_cd AS src_cd
+,li.src_stm_cd AS src_descr
+,li.src_stm_descr AS src_cd_descr
+,cast(encounter_type as string) as encntr_type_cd
+,cast(enc_type_ref.source_desc as string) as encntr_type_descr
+,cast(enc_id as string) as encntr_num
+,cast(admission_type as string) as adm_type_cd
+,cast(adm_type_ref.source_desc as string) as adm_type_descr
+,cast(null as string) as vip_cd
+,cast(null as string) as vip_descr
+,'-2' as vip_cd_sk
+,EXTRACT(date from admit_ts) as adm_dt
+,cast(admit_ts as datetime) as adm_ts
+,cast(discharge_ts as datetime) as dschrg_ts
+,cast(null as string) as palliative_care_ind
+,cast(null as string) as hspc_care_ind
+,cast(null as string) as ed_ind
+,null as ptnt_age_num
+,date(discharge_ts) as dschrg_dt 
+
 from encntr
+
+/*To fetch encounter type description value*/
+left join ref_data enc_type_ref
+on enc_type_ref.source_code = encntr.encounter_type
+
+/*To fetch admission type description value*/
+left join ref_data adm_type_ref
+on adm_type_ref.source_code = encntr.admission_type
+
+join
+  batch_info bi
+on
+  bi.batch_code='datahub-dataload'
+join
+  load_info li
+on
+  li.src_cd_bk='CERNER_FLMIM'
+
+where ehr_source = 'CERNER_FLMIM'
+
+

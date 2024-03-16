@@ -1,0 +1,11 @@
+config {
+    type: "assertion",
+    tags: ["postoperation_checker"]
+}
+
+SELECT
+  *
+FROM
+  ${ref("encounter_dim")}
+WHERE
+  adm_ts > dschrg_ts
