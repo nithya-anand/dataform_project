@@ -1,0 +1,17 @@
+js {
+    let {
+        fn_batchend,
+    } = require("includes/functions");
+}
+
+config {
+    type:"table",
+    tags: ["datahub_load"],
+    dependencies: ["step_tbl_write_cerner_encounter_fct"]
+}
+
+pre_operations {
+  ${fn_batchend()}
+}
+
+select 1 as test

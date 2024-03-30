@@ -1,0 +1,22 @@
+js {
+    let {
+        rdm_config
+    } = require("definitions/rdm/rdm_load");
+    let {
+    fn_load_source_system,
+    fn_source_system_config,
+    fn_load_domain,
+    fn_domain_config,
+    fn_rdm_load
+    } = require("includes/rdm_function");
+}
+
+config {
+    type: "operations",
+    tags: ["rdm_load","datahub_load"],
+    dependencies: ["batch_start"]
+}
+
+${fn_domain_config(rdm_config)}
+${fn_source_system_config(rdm_config)}
+${fn_rdm_load()}

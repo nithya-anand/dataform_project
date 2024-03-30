@@ -1,0 +1,28 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_setIncrWhere,
+        fn_SCD2load
+    } = require("includes/functions");
+    let {
+        source
+    } = require("definitions/param/source/patient_dim");
+    let processed_table = ref(source.stage_table)
+    let target_table = ref(source.target_table)
+    let {
+        target
+    } = require("definitions/param/target/patient");
+}
+
+config {
+    type: "table",
+    tags:["patient_load","datahub_load"],
+    dependencies: ["step_tbl_process_patient_dim"]
+}
+
+SELECT
+  1 AS test
+
+pre_operations {
+  ${fn_SCD2load(processed_table, target_table, target)}
+}

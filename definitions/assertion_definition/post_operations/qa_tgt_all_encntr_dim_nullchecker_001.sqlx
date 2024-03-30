@@ -1,0 +1,18 @@
+config {
+    type: "table",
+    tags: ["postoperation_checker"],
+    assertions: {
+        nonNull: ["encntr_type_descr",
+            "encntr_type_cd_sk",
+            "src_cd_sk",
+            "src_cd",
+            "src_cd_descr",
+            "src_descr"
+        ]
+    }
+}
+
+SELECT
+  *
+FROM
+  ${ref("encounter_dim")}

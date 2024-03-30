@@ -1,0 +1,46 @@
+const target = {
+    dk: ["encntr_dk"],
+    bk: ["encntr_bk"],
+    hash_dif: "",
+    insert_list: ["encntr_dk",
+        "encntr_bk",
+        "vld_fm_ts",
+        "vld_to_ts",
+        "dwm_load_info_sk",
+        "tenant_sk",
+        "src_cd_sk",
+        "src_cd",
+        "ptnt_dk",
+        "attnd_pract_dk",
+        "adm_pract_dk",
+        "pcp_pract_dk",
+        "adm_cdr_dk",
+        "adm_dt	",
+        "dschrg_cdr_dk",
+        "encntr_sts_cd_sk",
+        "encntr_sts_cd",
+        "encntr_sts_harmonized_cd",
+        "adm_dgns_cd_sk",
+        "adm_dgns_cd",
+        "adm_dgns_descr",
+        "adm_dgns_dk",
+        "dschrg_dt",
+        "ptnt_age_num"
+    ],
+    update_list: [],
+    compare_list: ["ptnt_dk",
+        "attnd_pract_dk",
+        "adm_pract_dk",
+        "pcp_pract_dk",
+        "adm_cdr_dk",
+        "adm_dt",
+        "dschrg_cdr_dk",
+        "encntr_sts_cd",
+        "dschrg_dt"
+    ],
+    stage_table: "step_tbl_process_cerner_encounter_fct",
+    target_table: "encounter_fct"
+}
+module.exports = {
+    target
+};

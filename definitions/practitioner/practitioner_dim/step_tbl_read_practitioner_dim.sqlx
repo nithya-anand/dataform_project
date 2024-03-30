@@ -1,0 +1,83 @@
+js {
+    let {
+        fn_calculateHash,
+        fn_setIncrWhere
+    } = require("includes/functions");
+    let {
+        source
+    } = require("definitions/param/source/practitioner_dim");
+    let {
+        batch
+    } = require("definitions/batch_control/batch");
+}
+
+config {
+    type: "table",
+    tags: ["practitioner_load","datahub_load"],
+    dependencies: ["rdm_reference data_load"]
+}
+
+WITH
+  batch_info AS (
+  SELECT
+    batch_run_id,
+    batch_code
+  FROM
+    ${ref("audit_batch_control")}
+  WHERE
+    batch_status='inprogress' ),
+  load_info AS (
+  SELECT
+    *
+  FROM
+    ${ref("src_stm_dim")} ),
+  practitioner_data AS (
+  SELECT
+    *
+  FROM
+    ${ref("practitioner")} ${fn_setIncrWhere(source, batch)} )
+SELECT
+  DISTINCT pract_id,
+  pract_id AS inr_pract_id,
+  CAST(extract_timestamp AS DATETIME) AS vld_fm_ts,
+  CAST('9999-12-31T23:59:59.59' AS DATETIME) AS vld_to_ts,
+  bi.batch_run_id AS dwm_load_info_sk,
+  li.tenant_sk AS tenant_sk,
+  li.src_cd_sk AS src_cd_sk,
+  li.src_stm_cd AS src_cd,
+  li.src_stm_descr AS src_cd_descr,
+  pract_birth_date AS dob,
+  CAST(NULL AS STRING) AS sex_cd_sk,
+  pract_gender_code AS sex_cd,
+  pract_gender_code AS sex_cd_descr,
+  pract_first_name AS frst_nm,
+  pract_middle_name AS mid_nm,
+  pract_last_name AS last_nm,
+  CAST(NULL AS STRING) AS sufx_nm,
+  CAST(NULL AS STRING) AS ttl_nm,
+  CONCAT(pract_last_name,' ',pract_first_name,' ',pract_middle_name) AS full_nm,
+  CONCAT(pract_last_name,' ',pract_first_name,' ',pract_middle_name) AS dspl_nm,
+  pract_address AS adr_line_1_descr,
+  CAST(NULL AS STRING) AS adr_line_2_descr,
+  CAST(NULL AS STRING) AS adr_line_3_descr,
+  CAST(NULL AS STRING) AS adr_line_4_descr,
+  CAST(NULL AS STRING) AS cty_nm,
+  CAST(NULL AS STRING) AS cnty_nm,
+  pract_state AS ste_prov_cd,
+  CAST(zip_code AS STRING) AS pst_cd,
+  CAST(zip_code AS STRING) AS prim_zip_extention_num,
+  CAST(NULL AS STRING) AS cntry_nm,
+  pract_phone AS ph_num,
+  pract_email AS email_use_descr,
+  CAST(NULL AS STRING) AS dscd_ind,
+  CAST(NULL AS STRING) AS npi_num,
+FROM
+  practitioner_data pract
+JOIN
+  batch_info bi
+ON
+  bi.batch_code='datahub-dataload'
+JOIN
+  load_info li
+ON
+  li.src_cd_bk='PRACT'

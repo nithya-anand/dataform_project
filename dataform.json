@@ -1,0 +1,18 @@
+{
+  "defaultSchema": "datahub_dataprocess",
+  "assertionSchema": "datahub_dataprocess",
+  "warehouse": "bigquery",
+  "defaultDatabase": "hackathon-healthcare-datahub",
+  "defaultLocation": "us-central1",
+  "vars": {
+    "tgt_dataset":"datahub",
+    "src_dataset":"master_data",
+    "stg_dataset":"datahub_dataprocess",
+    "master_project":"hackathon-healthcare-datahub",
+    "glb_hash_algorithm": "MD5",
+    "glb_null_replace": "^",
+    "glb_hash_concat": "~",
+    "glb_empty_replace": "NA"
+  }
+}
+    
